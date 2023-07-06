@@ -1,0 +1,59 @@
+version: '3'
+services:
+    web:
+        container_name: web-server
+        image: nginx:latest
+        ports:
+            - 80:80
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+              #            - ./medibhai-laravel:/app/public
+        depends_on:
+            - myapp
+
+    myapp:
+        container_name: app-server
+        image: php:8.2
+        build:
+                context: .
+                dockerfile: php.Dockerfile
+        env_file:
+            - ./.env
+        ports:
+            - 8000:8000
+        environment:
+            - DB_HOST=mysql
+            - DB_PORT=3306
+            - DB_USERNAME=${m_user}
+            - DB_DATABASE=${db_name}
+            - DB_PASSWORD=${u_pass}
+              #        volumes:
+          #            - ./medibhai-laravel:/app/public
+        depends_on:
+            - mysql
+
+              #    php:
+              #        container_name: php-server
+              #        image: php:8.2
+              #        build: 
+              #                context: .
+              #                dockerfile: php.Dockerfile
+              #        volumes:
+              #            - ./app:/app
+               
+    mysql:
+        container_name: db-server
+        image: mariadb:latest
+        env_file:
+            - ./.env
+        environment:
+            MARIADB_ROOT_PASSWORD: ${r_pass} 
+            MARIADB_USER: ${m_user}
+            MARIADB_PASSWORD: ${u_pass}
+            MARIADB_DATABASE: ${db_name}
+        volumes:
+            - mysqldata:/var/lib/mysql
+        ports:
+            - 3306:3306
+volumes:
+    mysqldata: {}
